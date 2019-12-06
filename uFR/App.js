@@ -20,22 +20,10 @@ var UFR = NativeModules.UFR;
 
 type Props = {};
 export default class App extends Component<Props> {
-	
-  constructor(props){
-    super(props)
-
-    this.state = {
-      address: ''
-    }
-  }
  
   // async functions to call the Java native methods
-  async ReaderOpenEx(address) {
-    UFR.ReaderOpenEx(address);
-  }
-  
-  _handlePress() {
-	 UFR.ReaderOpenEx(this.state.address);
+  async ReaderOpenEx() {
+    UFR.ReaderOpenEx();
   }
   
   async ReaderUISignal() {
@@ -50,15 +38,13 @@ export default class App extends Component<Props> {
     return (
 	<SafeAreaView style={styles.container}>
       <View>
-		<TextInput
-          style={styles.textInputStyle}
-          placeholder="Enter MAC address"
-          returnKeyLabel = {"next"}
-          onChangeText={(text) => this.setState({address:text})}
-		/>
+	   <Text style={{fontWeight: 'bold'}}>
+       Go to your Bluetooth settings and pair with uFR Online reader (default pin is: 123456) and then click 'CONNECT'
+		</Text>
+		<Separator />
         <Button
-          title="READER OPEN"
-          onPress={() => this._handlePress()}
+          title="CONNECT"
+          onPress={ this.ReaderOpenEx }
         />
       </View>
       <Separator />

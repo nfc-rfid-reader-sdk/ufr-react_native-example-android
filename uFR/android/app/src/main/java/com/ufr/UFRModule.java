@@ -1,8 +1,13 @@
 package com.ufr;
 
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.dlogic.uFCoder;
 import com.facebook.react.bridge.Callback;
@@ -13,6 +18,12 @@ import com.facebook.react.uimanager.IllegalViewOperationException;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.Collection;
+import java.util.Iterator;
+import java.util.List;
+import java.util.ListIterator;
+import java.util.Set;
 
 public class UFRModule extends ReactContextBaseJavaModule {
 
@@ -46,18 +57,53 @@ public class UFRModule extends ReactContextBaseJavaModule {
     //This is written without callback to show you that you can use Java code (example Toast) into your application
     //at the same time while you are using JavaScript
     @ReactMethod
-    public void ReaderOpenEx(String macAddress) {
-        try {
+    public void ReaderOpenEx() {
+        try
+        {
+            BluetoothAdapter mBTAdapter = BluetoothAdapter.getDefaultAdapter();
 
-            int status = uFCoder.ReaderOpenEx(0, macAddress, 'L', "");
-
-            if(status == 0)
+            if(mBTAdapter.isEnabled())
             {
-                Toast.makeText(getReactApplicationContext(), "Reader opened successfully", Toast.LENGTH_SHORT).show();
+                Set<BluetoothDevice> mPairedDevices = mBTAdapter.getBondedDevices();
+
+                if(mPairedDevices.size() > 0)
+                {
+                    for (BluetoothDevice device : mPairedDevices)
+                    {
+                        if(device.getName().startsWith("ON"))
+                        {
+                            //just in case
+                            uFCoder.ReaderClose();
+
+                            int status = uFCoder.ReaderOpenEx(0, device.getAddress(), 'L', "");
+
+                            if(status == 0)
+                            {
+                                Toast.makeText(getReactApplicationContext(), "Connected successfully", Toast.LENGTH_SHORT).show();
+                                return;
+                            }
+                            else
+                            {
+                                Toast.makeText(getReactApplicationContext(), "Failed to connect", Toast.LENGTH_SHORT).show();
+                                return;
+                            }
+                        }
+                    }
+                }
+                else
+                {
+                    Toast.makeText(getReactApplicationContext(), "No paired devices found", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+            }
+            else
+            {
+                Toast.makeText(getReactApplicationContext(), "Bluetooth not enabled", Toast.LENGTH_SHORT).show();
+                return;
             }
 
         } catch (Exception e) {
-           e.printStackTrace();
+            e.printStackTrace();
         }
     }
 
